@@ -1,0 +1,46 @@
+// This is your Prisma schema file
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model BloodPressure {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime
+  systolic  Int
+  diastolic Int
+  pulse     Int?
+  note      String?
+  source    String   @default("manual") // manual | android
+  createdAt DateTime @default(now())
+
+  @@index([timestamp])
+}
+
+model Food {
+  id          Int      @id @default(autoincrement())
+  timestamp   DateTime
+  description String
+  calories    Int?
+  source      String   @default("manual") // manual | android
+  createdAt   DateTime @default(now())
+
+  @@index([timestamp])
+}
+
+model Water {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime
+  amountMl  Int
+  type      String   @default("water") // water | tea | coffee | juice | other
+  source    String   @default("manual") // manual | android
+  createdAt DateTime @default(now())
+
+  @@index([timestamp])
+}

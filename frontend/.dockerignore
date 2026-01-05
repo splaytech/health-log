@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.expo
+.expo-shared
+android
+ios
+*.keystore
+.git
+.gitignore
+README.md
+dist
+web-build

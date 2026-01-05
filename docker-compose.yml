@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: health-log-backend
+    environment:
+      - DATABASE_URL=file:/data/health.db
+      - API_KEY=${API_KEY:-change-me-in-production}
+      - PORT=3000
+    volumes:
+      - health-data:/data
+    ports:
+      - "8601:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    container_name: health-log-frontend
+    ports:
+      - "8600:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  health-data:
+    driver: local
