@@ -15,6 +15,7 @@ export default function ApiSetup({ onComplete }: ApiSetupProps) {
   const [apiKey, setApiKey] = useState('change-me-in-production');
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const testAndSave = async () => {
     setTesting(true);
@@ -22,14 +23,19 @@ export default function ApiSetup({ onComplete }: ApiSetupProps) {
 
     try {
       // Validate URL format
-      new URL(apiUrl);
+      const url = new URL(apiUrl);
+
+      // Warn if using localhost on mobile
+      if (Platform.OS !== 'web' && (url.hostname === 'localhost' || url.hostname === '127.0.0.1')) {
+        throw new Error('localhost will not work on mobile. Use your computer\'s network IP address (e.g., http://192.168.1.100:8600)');
+      }
 
       // Test connection
       await apiService.updateConfig(apiUrl, apiKey);
-      const isConnected = await apiService.testConnection();
+      const result = await apiService.testConnection();
 
-      if (!isConnected) {
-        throw new Error('Unable to connect to API. Please check the URL and API key.');
+      if (!result.success) {
+        throw new Error(result.error || 'Unable to connect to API. Please check the URL and API key.');
       }
 
       // Save and complete onboarding
@@ -65,7 +71,7 @@ export default function ApiSetup({ onComplete }: ApiSetupProps) {
       <HelperText type="info" visible={true} style={styles.helperText}>
         {Platform.OS === 'web'
           ? 'Use the current URL (already filled in)'
-          : 'Enter your server URL (e.g., http://192.168.1.100:8600)'}
+          : 'IMPORTANT: Use your computer\'s network IP, NOT localhost.\nExample: http://192.168.1.100:8600\nFind IP: Run "ipconfig" (Windows) or "ifconfig" (Mac/Linux) on your server.'}
       </HelperText>
 
       <TextInput
@@ -74,10 +80,16 @@ export default function ApiSetup({ onComplete }: ApiSetupProps) {
         onChangeText={setApiKey}
         mode="outlined"
         placeholder="change-me-in-production"
-        secureTextEntry
+        secureTextEntry={!showApiKey}
         autoCapitalize="none"
         autoCorrect={false}
         style={styles.input}
+        right={
+          <TextInput.Icon
+            icon={showApiKey ? 'eye-off' : 'eye'}
+            onPress={() => setShowApiKey(!showApiKey)}
+          />
+        }
       />
       <HelperText type="info" visible={true} style={styles.helperText}>
         Default API key is 'change-me-in-production'

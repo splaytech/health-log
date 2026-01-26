@@ -2,65 +2,86 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { navigationTheme } from '../theme/theme';
+import { useTheme, colors as themeColors } from '../context/ThemeContext';
 
 import Dashboard from '../screens/Dashboard';
-import BloodPressure from '../screens/BloodPressure';
-import Food from '../screens/Food';
-import Water from '../screens/Water';
+import Mindfulness from '../screens/Mindfulness';
+import Activity from '../screens/Activity';
+import HealthMetrics from '../screens/HealthMetrics';
 import Settings from '../screens/Settings';
 
 const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
+  const { navigationTheme, colors, isDark } = useTheme();
+
   return (
     <NavigationContainer theme={navigationTheme}>
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: '#0078d4',
-          tabBarInactiveTintColor: '#666666',
+          tabBarActiveTintColor: themeColors.primary.main,
+          tabBarInactiveTintColor: colors.textMuted,
           headerShown: true,
           headerStyle: {
-            backgroundColor: '#f5f5f5',
+            backgroundColor: colors.surface,
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
           },
           headerTitleStyle: {
-            fontWeight: 'bold',
+            fontWeight: '600',
+            color: colors.text,
+          },
+          tabBarStyle: {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+            borderTopWidth: 1,
+            paddingTop: 4,
+            height: 60,
+          },
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: '500',
+            marginBottom: 6,
           },
         }}
       >
         <Tab.Screen
-          name="Dashboard"
+          name="Home"
           component={Dashboard}
           options={{
+            headerTitle: 'Dashboard',
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
             ),
           }}
         />
         <Tab.Screen
-          name="Blood Pressure"
-          component={BloodPressure}
+          name="Activity"
+          component={Activity}
           options={{
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="run" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Metrics"
+          component={HealthMetrics}
+          options={{
+            headerTitle: 'Health Metrics',
             tabBarIcon: ({ color, size }) => (
               <MaterialCommunityIcons name="heart-pulse" size={size} color={color} />
             ),
           }}
         />
         <Tab.Screen
-          name="Food"
-          component={Food}
+          name="Mindfulness"
+          component={Mindfulness}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="food-apple" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Water"
-          component={Water}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="water" size={size} color={color} />
+              <MaterialCommunityIcons name="meditation" size={size} color={color} />
             ),
           }}
         />

@@ -28,14 +28,38 @@ class ApiService {
   }
 
   // Test connection to API
-  testConnection = async (): Promise<boolean> => {
+  testConnection = async (): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await fetch(`${this.apiUrl}/api/health`, {
-        headers: this.getHeaders(),
+      // Create a timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Connection timeout')), 10000);
       });
-      return response.ok;
+
+      // Race between fetch and timeout
+      const response = await Promise.race([
+        fetch(`${this.apiUrl}/api/health`, {
+          headers: this.getHeaders(),
+        }),
+        timeoutPromise,
+      ]);
+
+      if (response.ok) {
+        return { success: true };
+      } else if (response.status === 401 || response.status === 403) {
+        return { success: false, error: 'Invalid API key. Please check your credentials.' };
+      } else {
+        return { success: false, error: `Server error: ${response.status}` };
+      }
     } catch (error) {
-      return false;
+      if (error instanceof Error) {
+        if (error.message === 'Connection timeout') {
+          return { success: false, error: 'Connection timeout. Check if the server is running and the URL is correct.' };
+        } else if (error.message.includes('Network request failed') || error.message.includes('fetch')) {
+          return { success: false, error: 'Cannot reach server. On mobile, use your computer\'s network IP (e.g., http://192.168.1.100:8600), not localhost.' };
+        }
+        return { success: false, error: error.message };
+      }
+      return { success: false, error: 'Unknown connection error' };
     }
   };
 
